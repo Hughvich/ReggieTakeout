@@ -36,6 +36,7 @@
           </div>
 
           <el-scrollbar wrap-class="scrollbar-wrapper">
+<!--            左侧菜单展示-->
             <el-menu
               :default-active="defAct"
               :unique-opened="false"
@@ -79,6 +80,7 @@
               <span>{{headTitle}}</span>
             </div>
             <div class="right-menu">
+              <!-- userInfo.name对应页面右上角展示的管理员-->
               <div class="avatar-wrapper">{{ userInfo.name }}</div>
               <!-- <div class="logout" @click="logout">退出</div> -->
               <img src="images/icons/btn_close@2x.png" class="outLogin" alt="退出" @click="logout" />
@@ -86,6 +88,7 @@
           </div>
           <div class="app-main" v-loading="loading">
             <div class="divTmp" v-show="loading"></div>
+<!--          iframe，选择左侧菜单，右侧展示内嵌子页面-->
             <iframe
               id="cIframe"
               class="c_iframe"
@@ -119,9 +122,9 @@
             userInfo: {},
             menuList: [
               // {
-              //   id: '1',
-              //   name: '门店管理',
-              //   children: [
+                // id: '1',
+                // name: '门店管理',
+                // children: [
                   {
                     id: '2',
                     name: '员工管理',
@@ -163,6 +166,7 @@
           }
         },
         computed: {},
+        // 钩子函数，拿到浏览器localStorage存储的userInfo
         created() {
           const userInfo = window.localStorage.getItem('userInfo')
           if (userInfo) {
@@ -196,6 +200,7 @@
           menuHandle(item, goBackFlag) {
             this.loading = true
             this.menuActived = item.id
+            // 通过iframeUrl点击名称，显示对应的url
             this.iframeUrl = item.url
             this.headTitle = item.name
             this.goBackFlag = goBackFlag

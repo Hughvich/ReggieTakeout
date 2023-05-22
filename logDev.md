@@ -43,4 +43,12 @@
 ----
 
 以下为重做项目：
-- 区别：jdk用1.8，maven项目创建，按照教程引入pom和application.yml，数据库从idea里通过执行db_reggie.sql创建
+- 做法区别：jdk用1.8，maven项目创建，按照教程引入pom和application.yml，数据库从idea里通过执行db_reggie.sql创建
+- 成功完成以上login功能
+
+---
+### 后台退出功能
+登录页面(backend/page/login/login.html)登录成功后跳转到/backend/index.html首页面，显示登陆用户名，  
+- 退出系统功能通过用户名右侧退出按钮实现，退出后跳回登陆页面
+- 发送退出请求的地址是/employee/logout，请求方式POST
+- 在controller中创建对应方法：清理Session中的用户id，返回结果
