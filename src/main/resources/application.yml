@@ -1,0 +1,31 @@
+server:
+  # 服务器端口（默认为8080）
+  port: 8080
+
+spring:
+  # 数据源配置
+  datasource:
+    # 德鲁伊连接池
+    druid:
+      # 数据库驱动（Spring Boot 2.0以上版本会自动根据URL识别，无需配置）
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      # 数据库连接地址
+      url: jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      # 数据库连接用户名
+      username: root
+      # 数据库连接密码
+      password: 1234
+
+# MyBatis Plus 相关配置
+mybatis-plus:
+  # 实体类所在包
+  type-aliases-package: org.reggie.pojo
+  configuration:
+    # 驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 打印SQL语句，即会在控制台打印SQL语句，方便调试
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 配置主键生成策略，自增
+      id-type: assign_id
