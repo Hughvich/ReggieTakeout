@@ -125,6 +125,7 @@
           }
         },
         computed: {},
+        // 钩子方法，Vue对象创建完自动执行
         created() {
           this.init()
           this.user = JSON.parse(localStorage.getItem('userInfo')).username
@@ -140,6 +141,7 @@
             }
             await getMemberList(params).then(res => {
               if (String(res.code) === '1') {
+                // records, total字段都在MB+封装的Page类
                 this.tableData = res.data.records || []
                 this.counts = res.data.total
               }
@@ -151,7 +153,7 @@
             this.page = 1;
             this.init();
           },
-           // 添加
+           // 添加员工
           addMemberHandle (st) {
             if (st === 'add'){
               window.parent.menuHandle({

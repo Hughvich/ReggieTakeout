@@ -1,16 +1,15 @@
 package org.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.reggie.common.R;
 import org.reggie.pojo.Employee;
 import org.reggie.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +28,7 @@ public class EmployeeController {
      *  传来username和password，json形式，封装成employee类
      *  登陆成功，员工对象的ID传给session一份，用到HttpServletRequest类获取session
      * @param employee
-     * @param request
+     * @param request 用于拿到session，拿到登录用户名
      * @return
      */
     @PostMapping("/login")
@@ -76,6 +75,7 @@ public class EmployeeController {
     /**
      * 新增员工，返回code=1为添加成功
      * @param employee
+     * @param request
      * @return
      */
     @PostMapping
@@ -92,6 +92,35 @@ public class EmployeeController {
         // 调用IService[MB+]里的save方法，将实体类存进数据库
         employeeService.save(employee);
         return R.success("新增员工成功");
+    }
+
+    /**
+     * 分页查询，请求参数：
+     * @param page 一共多少页
+     * @param pageSize 每页多少条
+     * @param name 按名称的窗口查询
+     * @return Page类为MB+封装的返回类，
+     */
+    @GetMapping("/page")
+    public R<Page> page(int page, int pageSize, String name) {
+        log.info("分页查询：page={}, pageSize={}, name={}", page,pageSize,name);
+
+        // 分页构造器的构造
+        Page pageInfo = new Page(page, pageSize);
+
+        // 条件构造器LambdaQueryWrapper的构造，过滤条件，当name字段isNotEmpty时，
+        // 执行like模糊查询，根据Employee里的name字段
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(StringUtils.isNotEmpty(name), Employee::getName, name);
+
+        // 排序条件order by：
+        queryWrapper.orderByDesc(Employee::getUpdateTime);
+
+        // 执行查询
+        employeeService.page(pageInfo, queryWrapper);
+
+        return R.success(pageInfo);
+
     }
 
 }

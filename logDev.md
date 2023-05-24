@@ -70,3 +70,10 @@
   - 服务端controller接受页面提交的数据并调用service将数据进行保存
   - service调用mapper操作数据库保存数据
   - 唯一username异常：全局异常捕获类
+
+### 分页查询员工
+- 分页查询：每页x条，前往第x页，输入框姓名查询
+- 发送ajax请求，将分页查询参数（page，pageSize，name）提交服务端
+- 服务端Controller接受页面提交的数据并调用Service，Service调用Mapper操作数据库，
+- Controller将查询到的分页数据响应到页面
+- 条件构造器LambdaQueryWrapper, name模糊条件查询，设置排序，调用MB+的分页查询方法page进行查询
