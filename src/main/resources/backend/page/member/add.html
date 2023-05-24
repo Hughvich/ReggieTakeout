@@ -1,3 +1,4 @@
+<!--新增员工页面-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,10 +154,13 @@
               }
             })
           },
+          // 点击保存，提交表单
           submitForm (formName, st) {
+            // validate先进行输入校验
             this.$refs[formName].validate((valid) => {
               if (valid) {
                 if (this.actionType === 'add') {
+                  // 表单数据组装成json
                   const params = {
                     ...this.ruleForm,
                     sex: this.ruleForm.sex === '女' ? '0' : '1'

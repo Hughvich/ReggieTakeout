@@ -51,4 +51,22 @@
 登录页面(backend/page/login/login.html)登录成功后跳转到/backend/index.html首页面，显示登陆用户名，  
 - 退出系统功能通过用户名右侧退出按钮实现，退出后跳回登陆页面
 - 发送退出请求的地址是/employee/logout，请求方式POST
-- 在controller中创建对应方法：清理Session中的用户id，返回结果
+- 在controller中创建对应方法：
+
+- 完善登录功能：用过滤器/拦截器，登录成功后才能访问首页index.html   
+  过滤器逻辑：
+  - 获取本次请求URI
+    （URL和URI关系：URL是一种URI（子集），最流行的资源标识（即地址））
+  - 判断本次请求是否需要处理，否则放行
+  - 判断登录状态，已登录则放行
+  - 未登录则返回未登录结果
+
+---
+### 新增员工
+- 后台系统管理信息，新增员工添加后台系统用户，点击按钮【添加员工】跳转到新增员工页面，
+- 数据表中employee表的username添加唯一字段约束，status默认为1，账号停用是0
+- 执行过程：
+  - 页面发送ajax（axios）请求POST，将新增员工页面中输入的数据以json格式提交到服务器
+  - 服务端controller接受页面提交的数据并调用service将数据进行保存
+  - service调用mapper操作数据库保存数据
+  - 唯一username异常：全局异常捕获类

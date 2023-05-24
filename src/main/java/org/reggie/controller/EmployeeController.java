@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -23,10 +24,13 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    /*
-    登录功能：
-     传来username和password，json形式，封装成employee类
-     登陆成功，员工对象的ID传给session一份，用到HttpServletRequest类获取session
+    /**
+     * 登录功能：
+     *  传来username和password，json形式，封装成employee类
+     *  登陆成功，员工对象的ID传给session一份，用到HttpServletRequest类获取session
+     * @param employee
+     * @param request
+     * @return
      */
     @PostMapping("/login")
     public R<Employee> login(@RequestBody Employee employee, HttpServletRequest request){
@@ -56,14 +60,38 @@ public class EmployeeController {
         return R.success(emp);
     }
 
-    /*
-    退出功能：
-        清理Session中的用户id，返回结果
+    /**
+     * 退出功能：
+     *     清理Session中的用户id，返回结果
+     * @param request
+     * @return
      */
     @PostMapping("/logout")
     public R<String> logout(HttpServletRequest request) {
         request.getSession().removeAttribute("employee");
         return R.success("退出成功");
+    }
+
+
+    /**
+     * 新增员工，返回code=1为添加成功
+     * @param employee
+     * @return
+     */
+    @PostMapping
+    public R<String> save(@RequestBody Employee employee,HttpServletRequest request) {
+        log.info("新增员工：{}",employee.toString());
+        // 设置初始密码，md5加密
+        employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes(StandardCharsets.UTF_8)));
+        // 记录新增+修改时间，创建人(从session拿)，更新人
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setCreateUser((Long)request.getSession().getAttribute("employee"));
+        employee.setUpdateUser((Long)request.getSession().getAttribute("employee"));
+
+        // 调用IService[MB+]里的save方法，将实体类存进数据库
+        employeeService.save(employee);
+        return R.success("新增员工成功");
     }
 
 }
