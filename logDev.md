@@ -71,9 +71,70 @@
   - service调用mapper操作数据库保存数据
   - 唯一username异常：全局异常捕获类
 
+---
 ### 分页查询员工
 - 分页查询：每页x条，前往第x页，输入框姓名查询
 - 发送ajax请求，将分页查询参数（page，pageSize，name）提交服务端
 - 服务端Controller接受页面提交的数据并调用Service，Service调用Mapper操作数据库，
 - Controller将查询到的分页数据响应到页面
 - 条件构造器LambdaQueryWrapper, name模糊条件查询，设置排序，调用MB+的分页查询方法page进行查询
+
+---
+### 启用/禁用员工账号
+- 禁用账号，不能登录，启动账号，正常登录
+- 管理员对所有员工账号进行操作：启用/禁用按钮，status=1 按钮显示禁用，status=0 按钮显示启用
+- 普通用户只看到帐号状态，操作只有编辑，没有启/禁用
+
+执行过程：
+- 页面发送ajax请求，参数id和status（与原status相反）提交到服务端
+- 服务端controller接收调用service，再调用mapper，对status字段进行 更新 操作
+
+出现id精度丢失问题，即没有查到id，js对Long丢失最后两位精度（16位，而MB+雪花算法id自增位19位），需要转成字符串  
+解决1：在实体类id上加注解 @TableId(value = "id",type = IdType.AUTO)
+↑以上解决方法测试无用
+
+解决2：对象转换器JacksonObjectMapper，基于Jackson进行Java对象和json数据的互相转换（Java->json 称为序列化过程）；  
+在序列化过程中，通过ToStringSerializer将Long转为String  
+在WebMvcConfig配置类中扩展SpringMVC的消息转换器，在消息转换器中使用提供的对象转换器进行java
+
+---
+### 编辑员工信息
+执行流程：
+- 页面上点击“编辑”按钮，页面跳转到 输入框页面add.html，传递url，携带参数：员工id
+- 在add.html页面获取url中的参数：员工id
+- 发送ajax请求，到服务端，传参员工id
+- 服务端接收请求，根据员工id查询（page分页查询方法），将员工信息以json格式响应给输入框页面
+- 输入框页面接收服务端响应json数据，通过vue的数据绑定进行员工信息回显
+- 点击 保存 按钮，再次发送ajax请求到服务端，提交输入框页面中 修改后的 员工信息json
+- 服务端接收员工信息并进行处理update方法，完成后响应给页面
+- 页面接收服务端响应信息后进行相应处理
+
+--- 
+### 分类管理
+#### 新增分类
+- 菜品 对应-> 菜品分类  
+- 套餐 对应-> 套餐分类  
+- 分类管理页面中添加菜品分类，和套餐分类按钮，两个输入框
+- 需要一个排序
+- 数据表category中，类型type=1菜品分类，2套餐分类
+
+新增分类执行过程：
+  - 点击新增菜品/套餐分类按钮，输入框输入数据：分类名称name+排序sort+类型type， 
+    页面发送ajax请求，将新增分类窗口输入的数据以json形式提交到服务端
+  - 服务端Controller接收数据调用Service，Mapper，数据库保存数据
+
+#### 分类 分页查询
+基本同员工页面查询
+
+#### 分类 删除
+- 普通的删除，但是如果分类关联了菜品或套餐，分类不允许被删除
+- 过程：点删除，ajax提交id到服务端，controller-service-mapper操作数据库删除(MB+的RemoveById方法)
+- Dish实体类里的categoryId属性和分类Category的id关联，套餐类里的categoryId也是
+
+---
+#### MB+功能：公共字段自动填充
+公共字段，比如创建时间，创建人，修改时间，修改人，可被自动填充简化，指定字段赋予指定值  
+实现：实体类属性上加注解@TableField，指定自动填充的策略  
+    按照框架要求编写元数据对象处理器，在此类中统一为公共字段赋值，此类需要实现MetaObjectHandler接口
+获取当前修改/创建人，使用到ThreadLocal类：
+

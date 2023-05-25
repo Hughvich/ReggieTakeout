@@ -123,4 +123,34 @@ public class EmployeeController {
 
     }
 
+    /**
+     * 根据id修改员工信息，包括status启禁用操作
+     * @param employee
+     * @return
+     */
+    @PutMapping
+    public R<String> update(@RequestBody Employee employee, HttpServletRequest request) {
+        // 修改时间，修改用户
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser((Long)request.getSession().getAttribute("employee"));
+        // 调用MB+的根据id更新方法
+        employeeService.updateById(employee);
+        return R.success("员工信息修改成功");
+    }
+
+    /**
+     * 根据id查询员工信息
+     *
+     * @param id url中得到id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<Employee> getById(@PathVariable Long id) {
+        log.info("根据id查询员工信息: id={}", id);
+        Employee employee = employeeService.getById(id);
+        if(employee == null) {
+            return R.error("未查询到对应员工信息");
+        }
+        return R.success(employee);
+    }
 }

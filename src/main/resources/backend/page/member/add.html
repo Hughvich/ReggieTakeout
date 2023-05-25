@@ -133,6 +133,7 @@
         },
         created() {
           this.id = requestUrlParam('id')
+          // id有值，类型为edit，没有id则是新增add
           this.actionType = this.id ? 'edit' : 'add'
           if (this.id) {
             this.init()

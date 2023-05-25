@@ -1,3 +1,5 @@
+<!--员工列表页面-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,6 +80,10 @@
             >
               编辑
             </el-button>
+            <!--
+            scope.row就是所展示的一条数据的json封装
+            v-if:如果模型数据user是管理员则展示启禁用按钮
+            -->
             <el-button
               type="text"
               size="small"
@@ -85,6 +91,7 @@
               @click="statusHandle(scope.row)"
               v-if="user === 'admin'"
             >
+            <!--按钮名字动态展示，与启禁用状态相反-->
               {{ scope.row.status == '1' ? '禁用' : '启用' }}
             </el-button>
           </template>
@@ -128,6 +135,7 @@
         // 钩子方法，Vue对象创建完自动执行
         created() {
           this.init()
+          // 获取当前登陆员工的账号，赋值给模型数据user
           this.user = JSON.parse(localStorage.getItem('userInfo')).username
         },
         mounted() {
@@ -173,11 +181,13 @@
           statusHandle (row) {
             this.id = row.id
             this.status = row.status
+            // 确认框
             this.$confirm('确认调整该账号的状态?', '提示', {
               'confirmButtonText': '确定',
               'cancelButtonText': '取消',
               'type': 'warning'
               }).then(() => {
+                // 启用/禁用方法：注意!this.status ? 1 : 0 前面的！，status为1传参0，为0传1
               enableOrDisableEmployee({ 'id': this.id, 'status': !this.status ? 1 : 0 }).then(res => {
                 console.log('enableOrDisableEmployee',res)
                 if (String(res.code) === '1') {

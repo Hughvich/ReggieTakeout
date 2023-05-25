@@ -1,3 +1,7 @@
+/*
+发送ajax请求，根据不同路径url和方法类型method，将data传入服务端
+ */
+
 function getMemberList (params) {
   return $axios({
     url: '/employee/page',
@@ -6,7 +10,7 @@ function getMemberList (params) {
   })
 }
 
-// 修改---启用禁用接口
+// 修改---启用禁用接口，params为0或1，与原status相反
 function enableOrDisableEmployee (params) {
   return $axios({
     url: '/employee',
@@ -33,7 +37,7 @@ function editEmployee (params) {
   })
 }
 
-// 修改页面反查详情接口
+// 修改页面反查详情接口（会显示在员工信息编辑页输入框中）
 function queryEmployeeById (id) {
   return $axios({
     url: `/employee/${id}`,
