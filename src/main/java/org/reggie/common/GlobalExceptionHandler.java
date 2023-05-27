@@ -17,6 +17,11 @@ import java.sql.SQLIntegrityConstraintViolationException;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    /**
+     * 全局异常处理器，捕获字段重复的异常处理
+     * @param exception
+     * @return
+     */
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public R<String > exceptionHandler(SQLIntegrityConstraintViolationException exception) {
         log.error(exception.getMessage());
@@ -29,4 +34,18 @@ public class GlobalExceptionHandler {
         }
         return R.error("未知错误");
     }
+
+    /**
+     * 捕获CustomException异常，对删除菜品/套餐分类时关联了菜品/套餐的异常处理
+     * @param exception
+     * @return
+     */
+    @ExceptionHandler(CustomException.class)
+    public R<String > exceptionHandler(CustomException exception) {
+        log.error(exception.getMessage());
+
+        return R.error(exception.getMessage());
+    }
+
+
 }

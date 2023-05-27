@@ -10,6 +10,8 @@ import org.reggie.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /*
 分类管理：菜品管理，套餐管理
  */
@@ -53,15 +55,46 @@ public class CategoryController {
     }
 
     /**
-     * 根据id删除分类
-     * @param ids ？？？
+     * 根据id删除分类，删除前判断当前分类是否已经关联菜品/套餐
+     * @param ids 本是id，前端传来的就是ids
      * @return
      */
     @DeleteMapping
     public R<String> delete(Long ids) {
         log.info("删除分类，id：{}",ids);
         // 判断当前分类是否已经关联菜品/套餐
-        categoryService.removeById(ids);
+        categoryService.remove(ids);
         return R.success("分类删除成功");
     }
+
+    /**
+     * 根据id修改category分类信息
+     * @param category
+     * @return
+     */
+    @PutMapping
+    public R<String> update(@RequestBody Category category) {
+        log.info("修改分类信息：{}", category);
+        categoryService.updateById(category);
+        return R.success("修改分类信息成功");
+    }
+
+    /**
+     * 根据条件查询分类（用于菜品分类下拉列表查询）
+     * @param category 用其中的type，按type查分类列表
+     * @return list 菜品分类的下拉列表，返回一个list
+     */
+    @GetMapping("/list")
+    public R<List<Category>> list(Category category) {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        // 添加条件，根据type查询，先判断type不为空
+        queryWrapper.eq(category.getType() != null, Category::getType, category.getType());
+        // 添加排序，如果排序号相同，根据修改时间降序
+        queryWrapper.orderByAsc(Category::getSort).orderByDesc(Category::getUpdateTime);
+
+        List<Category> list = categoryService.list(queryWrapper);
+        return R.success(list);
+    }
+
+
 }

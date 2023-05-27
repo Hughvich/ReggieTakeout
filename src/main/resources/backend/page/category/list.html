@@ -205,8 +205,10 @@
             this.classData.dialogVisible = true
           },
           editHandle(dat) {
+            // 动态展示输入框标题：
             this.classData.title = '修改分类'
             this.action = 'edit'
+            // 为模型数据赋值，回显
             this.classData.name = dat.name
             this.classData.sort = dat.sort
             this.classData.id = dat.id

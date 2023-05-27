@@ -387,7 +387,7 @@
             }
           },
 
-          // 获取菜品分类
+          // 获取菜品分类，type为1，代表菜品分类
           getDishList () {
             getCategoryList({ 'type': 1 }).then(res => {
               if (res.code === 1) {

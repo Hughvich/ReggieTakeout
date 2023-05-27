@@ -21,7 +21,7 @@
 用于设置静态资源映射，如网页请求index.html，映射到resource/backend/index.html
 
 ---
-### login登录
+## login登录
 准备实体类pojo/Employee，三层架构， 基于mybatis plus[mb]：
 - @Mapper接口继承mb的BaseMapper<Employee>，实现CRUD，
 - EmpService接口继承mb的IService<Employee>，
@@ -38,16 +38,18 @@
   Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.ahun.reggietakeout.mapper.EmployeeMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
   - 解决：无法解决
   
-# 放弃原项目，重新按照教程一五一十做
+
+---
+# -------放弃原项目，重新按照教程一五一十做--------
 
 ----
 
-以下为重做项目：
+以下为项目重新搭建：
 - 做法区别：jdk用1.8，maven项目创建，按照教程引入pom和application.yml，数据库从idea里通过执行db_reggie.sql创建
 - 成功完成以上login功能
 
 ---
-### 后台退出功能
+### 登录管理 - 后台退出功能
 登录页面(backend/page/login/login.html)登录成功后跳转到/backend/index.html首页面，显示登陆用户名，  
 - 退出系统功能通过用户名右侧退出按钮实现，退出后跳回登陆页面
 - 发送退出请求的地址是/employee/logout，请求方式POST
@@ -62,6 +64,7 @@
   - 未登录则返回未登录结果
 
 ---
+## 员工管理
 ### 新增员工
 - 后台系统管理信息，新增员工添加后台系统用户，点击按钮【添加员工】跳转到新增员工页面，
 - 数据表中employee表的username添加唯一字段约束，status默认为1，账号停用是0
@@ -110,8 +113,10 @@
 - 页面接收服务端响应信息后进行相应处理
 
 --- 
-### 分类管理
-#### 新增分类
+---
+
+## 分类管理
+### 分类 - 新增
 - 菜品 对应-> 菜品分类  
 - 套餐 对应-> 套餐分类  
 - 分类管理页面中添加菜品分类，和套餐分类按钮，两个输入框
@@ -123,18 +128,51 @@
     页面发送ajax请求，将新增分类窗口输入的数据以json形式提交到服务端
   - 服务端Controller接收数据调用Service，Mapper，数据库保存数据
 
-#### 分类 分页查询
+### 分类 - 分页查询
 基本同员工页面查询
 
-#### 分类 删除
+### 分类 - 删除
 - 普通的删除，但是如果分类关联了菜品或套餐，分类不允许被删除
 - 过程：点删除，ajax提交id到服务端，controller-service-mapper操作数据库删除(MB+的RemoveById方法)
 - Dish实体类里的categoryId属性和分类Category的id关联，套餐类里的categoryId也是
 
+### 分类 - 修改
+操作-修改按钮，弹出“修改分类”输入框，框内自动回显信息（前端已实现），修改后点击确定按钮
+
 ---
-#### MB+功能：公共字段自动填充
+### MB+功能：公共字段自动填充
 公共字段，比如创建时间，创建人，修改时间，修改人，可被自动填充简化，指定字段赋予指定值  
 实现：实体类属性上加注解@TableField，指定自动填充的策略  
     按照框架要求编写元数据对象处理器，在此类中统一为公共字段赋值，此类需要实现MetaObjectHandler接口
-获取当前修改/创建人，使用到ThreadLocal类：
+获取当前修改/创建人，使用到ThreadLocal类  
+客户端每次发送http请求到服务端都是同一个新的线程，
+从LoginCheckFilter的doFilter方法，到EmployeeController的update方法，再到MyMetaObjectHandler的updateFill方法，  
+ThreadLocal是Thread的局部变量，为每个使用该变量的线程提供独立的变量副本，  
+可以保存一些数据，线程隔离效果：线程内可以获取对应的值，线程外不可访问
+实现步骤：
+- 写BaseContext工具类，基于ThreadLocal封装
+- LoginCheckFilter中的doFilter方法调用BC，设置当前用户id
+- MyMetaObjHdl中调用BC获取用户id
 
+---
+---
+## 菜品管理
+### 菜品 - 文件上传
+- upload，对于form表单，使用post方式，multipart格式，输入框类型type="file"
+- 服务端接收客户端页面上传的文件，用到commons-fileupload和common-io两个apache组件
+- 在controller中声明一个MultipartFile类的参数来接收上传的文件
+
+### 菜品 - 新增
+- 新增按钮弹出输入框，选择所属菜品分类，上传菜品图片，
+- 涉及两个表：新增 - 将输入框信息插入到dish表，如果添加了口味做法，向dish_flavor插入数据，如甜味、温度、辣度
+- 过程：
+  - 首先页面发送ajax请求，查询把菜品分类显示在下拉框中
+  - 上传菜品图片，页面发送请求-上传文件，服务端将图片保存到服务器
+  - 下载图片（回显），页面发送请求-下载文件，响应回页面回显
+  - 点击保存按钮，发送ajax请求，将菜品数据json提交服务端
+  
+页面dish中的flavors数据没法用Dish实体类接收（属性无法一一对应），重新声明一个类，DTO-DataTransferObject，用于展示层和服务层之间的数据传输
+
+### 菜品 - 分页查询
+- 除了菜品自己的基本信息外，还有展示图片，菜品分类，需要联表查询  
+- 页面发送ajax请求，将分页查询参数page，pageSize，name（查询栏）提交服务端，以及图片下载
