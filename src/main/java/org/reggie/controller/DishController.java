@@ -47,7 +47,6 @@ public class DishController {
      * @param name 查询框输入的菜品名
      * @return
      */
-
     @GetMapping("/page")
     public R<Page> page(int page, int pageSize, String name) {
         // 构造分页构造器
@@ -88,5 +87,46 @@ public class DishController {
 
         return R.success(dishDtoPage);
     }
+
+    /**
+     * 根据id查询菜品普通信息(dish)+口味(dish_flavor)
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<DishDto> get(@PathVariable Long id) {
+        // 主要联合查询getByIdWithFlavor()在serviceImpl里完成
+        DishDto dishDto = dishService.getByIdWithFlavor(id);
+        return R.success(dishDto);
+    }
+
+    /**
+     * 修改菜品
+     * @param dishDto
+     * @return
+     */
+    @PutMapping
+    public R<String> update(@RequestBody DishDto dishDto) {
+        log.info("修改菜品：" + dishDto.toString());
+        dishService.updateWithFlavor(dishDto);
+        return R.success("修改菜品成功");
+    }
+
+    /**
+     * 根据条件查询菜品
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> list(Dish dish) {
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+        // 添加条件，查询状态status=1即在售状态的菜品
+        queryWrapper.eq(Dish::getStatus, 1);
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> list = dishService.list(queryWrapper);
+        return R.success(list);
+    }
+
 
 }
