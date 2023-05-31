@@ -40,7 +40,9 @@ public class LoginCheckFilter implements Filter {
           "/employee/logout",
           "/backend/**", //静态资源
           "/front/**", //静态资源
-          "/common/**"
+          "/common/**",
+          "/user/sendMsg", //移动端发送短信
+          "/user/login" //移动端登录
         };
         // - check方法 - 判断本次请求是否需要处理，否则放行
         boolean check = check(requestURI, urls);
@@ -61,6 +63,19 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request,response);
             return;
         }
+
+        // - 判断 移动端 登录状态getSession，已登录则放行
+        if (request.getSession().getAttribute("user") != null) {
+            log.info("用户已登录，id{}",request.getSession().getAttribute("user"));
+
+            // BaseContext传入id
+            BaseContext.setCurrentId((Long) request.getSession().getAttribute("user"));
+
+            // 放行
+            filterChain.doFilter(request,response);
+            return;
+        }
+
         // - 未登录则返回未登录结果,通过 输出流 的方式回写：data.code, data.msg
         log.info("用户未登录");
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));

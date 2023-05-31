@@ -7,6 +7,7 @@ import org.reggie.common.R;
 import org.reggie.dto.DishDto;
 import org.reggie.pojo.Category;
 import org.reggie.pojo.Dish;
+import org.reggie.pojo.DishFlavor;
 import org.reggie.service.CategoryService;
 import org.reggie.service.DishFlavorService;
 import org.reggie.service.DishService;
@@ -113,10 +114,58 @@ public class DishController {
     }
 
     /**
-     * 根据条件查询菜品
+     * 根据条件查询 菜品
      * @param dish
      * @return
      */
+    @GetMapping("/list")
+    public R<List<DishDto>> list(Dish dish) {
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+        // 添加条件，查询状态status=1即在售状态的菜品
+        queryWrapper.eq(Dish::getStatus, 1);
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> list = dishService.list(queryWrapper);
+
+
+        List<DishDto> dishDtoList = list.stream().map((item) -> {
+            // 要用到Dto，里面有个CategoryName属性
+            DishDto dishDto = new DishDto();
+            // item的其他普通属性拷贝给Dto
+            BeanUtils.copyProperties(item, dishDto);
+            // 拿到item的分类id
+            Long categoryId = item.getCategoryId();
+            // 查数据库（先判断category是否为空），拿到id对应的菜品 分类名称，赋给dishDto
+            Category category = categoryService.getById(categoryId);
+            if (category != null) {
+                String categoryName = category.getName();
+                dishDto.setCategoryName(categoryName);
+            }
+
+            // 口味flavor + item原属性 赋给dishDto
+            LambdaQueryWrapper<DishFlavor> dishFlavorLQW = new LambdaQueryWrapper<>();
+            dishFlavorLQW.eq(DishFlavor::getDishId, item.getId());
+            List<DishFlavor> dishFlavorList = dishFlavorService.list(dishFlavorLQW);
+            dishDto.setFlavors(dishFlavorList);
+
+            // 以上口味flavor + item原属性 赋给dishDto 也可以用以下方法：
+//            DishDto dishDto1 = dishService.getByIdWithFlavor(item.getId());
+//            BeanUtils.copyProperties(item, dishDto1);
+
+            return dishDto;
+        }).collect(Collectors.toList());
+
+
+        return R.success(dishDtoList);
+    }
+
+    /**
+     * *********用Dish实体类的list方法*********
+     * 根据条件查询 菜品
+     * @param dish
+     * @return
+     */
+    /*
     @GetMapping("/list")
     public R<List<Dish>> list(Dish dish) {
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
@@ -127,6 +176,8 @@ public class DishController {
         List<Dish> list = dishService.list(queryWrapper);
         return R.success(list);
     }
+
+     */
 
 
 }
